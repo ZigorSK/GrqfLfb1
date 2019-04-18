@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<windows.h>
 
+
 #define PI 3.14159265
 #define X0 30
 #define Dx 5
@@ -10,108 +11,153 @@
 #define SCALE 1.05
 #define scale 0.95
 
-#define R -5
-#define L 5
+#define R -2
+#define L 2
 
 #define _CRT_SECURE_NO_WARNINGS
 
-void DrawLine(int A[][3])
+void DrawLine(double A[][3],int flag)
 {
-	int B[3][3] = { {A[0][0], A[0][1]} , {A[1][0], A[1][1] } };
-	//B[0][0] = x0 B[0][1] = y0 B[1][0] =x1 B[1][1] =y1
-	int dx = abs(B[0][0] - B[1][0]);
-	int dy = abs(B[0][1] - B[1][1]);
-	int sx = B[0][0] < B[1][0] ? 1 : -1;
-	int sy = B[0][1] < B[1][1] ? 1 : -1;
-	int err =( dx > dy?dx:-dy)/2;
-	int e2 = err;
+
 	HWND sHwnd = GetForegroundWindow();
 	HDC hdc = GetDC(sHwnd);
-
-
-
-	while (1)
+	if (flag)
 	{
-		SetPixel(hdc, B[0][0], B[0][1], RGB(0, 200, 200));
 
-		if (B[0][0] == B[1][0] && B[0][1] == B[1][1]) break;
-		e2 = err;
-		if (e2 > -dx)
+		srand(time(NULL));
+
+		int B[2][3] = { {round(A[0][0]),round(A[0][1]),A[0][2]} ,{round(A[1][0]),round(A[1][1]),A[1][2]} };
+
+		int dx = abs(B[0][0] - B[1][0]);
+		int dy = abs(B[0][1] - B[1][1]);
+		int sx = B[0][0] < B[1][0] ? 1 : -1;
+		int sy = B[0][1] < B[1][1] ? 1 : -1;
+		int err = (dx > dy ? dx : -dy) / 2;
+		double e2 = err;
+
+		int R1 = rand() % 100 + 100;
+		int R2 = rand() % 100 + 100;
+		int R3 = rand() % 100 + 100;
+		while (1)
 		{
-			err -= dy; B[0][0] += sx;
+			SetPixel(hdc, B[0][0], B[0][1], RGB(R1, R2, R3));
+
+			if (B[0][0] == B[1][0] && B[0][1] == B[1][1]) break;
+			e2 = err;
+			if (e2 > -dx)
+			{
+				err -= dy; B[0][0] += sx;
+			}
+
+			if (e2 < dy)
+			{
+				err += dx; B[0][1] += sy;
+			}
 		}
+	}
+	else
+	{
+		int B[2][3] = { {round(A[0][0]),round(A[0][1]),A[0][2]} ,{round(A[1][0]),round(A[1][1]),A[1][2]} };
 
-		if (e2 < dy)
+		int dx = abs(B[0][0] - B[1][0]);
+		int dy = abs(B[0][1] - B[1][1]);
+		int sx = B[0][0] < B[1][0] ? 1 : -1;
+		int sy = B[0][1] < B[1][1] ? 1 : -1;
+		int err = (dx > dy ? dx : -dy) / 2;
+		double e2 = err;
+
+		while (1)
 		{
-			err += dx; B[0][1] += sy;
+			SetPixel(hdc, B[0][0], B[0][1], RGB(0, 0, 0));
+
+			if (B[0][0] == B[1][0] && B[0][1] == B[1][1]) break;
+			e2 = err;
+			if (e2 > -dx)
+			{
+				err -= dy; B[0][0] += sx;
+			}
+
+			if (e2 < dy)
+			{
+				err += dx; B[0][1] += sy;
+			}
 		}
 	}
 	ReleaseDC(sHwnd, hdc);
-
-
 }
 
-void move_x(int A[3][3], int flag)
+void move_x(double A[3][3], int flag)
 {
 	int dx = flag ? Dx : -Dx;
 	int B[3][3] = { {1,0,0},{0,1,0},{dx, 0, 1} };
 
-	A[0][0] = A[0][0] * B[0][0] + A[0][1] * B[1][0] + A[0][2] * B[2][0];
-	A[0][1] = A[0][0] * B[0][1] + A[0][1] * B[1][1] + A[0][2] * B[2][1];
-	A[0][2] = A[0][0] * B[0][2] + A[0][1] * B[1][2] + A[0][2] * B[2][2];
+	double tmp[3] = { 0,0, };
+	for (int i = 0; i < 2; i++)
+	{
+		tmp[0] = (A[i][0] * B[0][0] + A[i][1] * B[1][0] + A[i][2] * B[2][0]);
+		tmp[1] = (A[i][0] * B[0][1] + A[i][1] * B[1][1] + A[i][2] * B[2][1]);
+		tmp[2] = (A[i][0] * B[0][2] + A[i][1] * B[1][2] + A[i][2] * B[2][2]);
 
-	A[1][0] = A[1][0] * B[0][0] + A[1][1] * B[1][0] + A[1][2] * B[2][0];
-	A[1][1] = A[1][0] * B[0][1] + A[1][1] * B[1][1] + A[1][2] * B[2][1];
-	A[1][2] = A[1][0] * B[0][2] + A[1][1] * B[1][2] + A[1][2] * B[2][2];
+		A[i][0] = tmp[0];
+		A[i][1] = tmp[1];
+		A[i][2] = tmp[2];
+	}
 }
 
-void move_y(int A[3][3], int flag)
+void move_y(double A[][3], int flag)
 {
 	int dy = flag ? -Dy : Dy;
-	int B[3][3] = { {1,0,0},{0,1,0},{0, dy, 1} };
+	int B[][3] = { {1,0,0},{0,1,0},{0, dy, 1} };
+	double tmp[3] = { 0,0, };
+	for (int i = 0; i < 2; i++)
+	{
+		tmp[0] = (A[i][0] * B[0][0] + A[i][1] * B[1][0] + A[i][2] * B[2][0]);
+		tmp[1] = (A[i][0] * B[0][1] + A[i][1] * B[1][1] + A[i][2] * B[2][1]);
+		tmp[2] = (A[i][0] * B[0][2] + A[i][1] * B[1][2] + A[i][2] * B[2][2]);
 
-	A[0][0] = A[0][0] * B[0][0] + A[0][1] * B[1][0] + A[0][2] * B[2][0];
-	A[0][1] = A[0][0] * B[0][1] + A[0][1] * B[1][1] + A[0][2] * B[2][1];
-	A[0][2] = A[0][0] * B[0][2] + A[0][1] * B[1][2] + A[0][2] * B[2][2];
+		A[i][0] = tmp[0];
+		A[i][1] = tmp[1];
+		A[i][2] = tmp[2];
+	}
 
-	A[1][0] = A[1][0] * B[0][0] + A[1][1] * B[1][0] + A[1][2] * B[2][0];
-	A[1][1] = A[1][0] * B[0][1] + A[1][1] * B[1][1] + A[1][2] * B[2][1];
-	A[1][2] = A[1][0] * B[0][2] + A[1][1] * B[1][2] + A[1][2] * B[2][2];
 }
 
-void Scale(int A[3][3], int flag)
+void Scale(double A[][3], int flag)
 {
-	int x1 = round((A[0][0] + A[1][0]) / 2);
-	int y1 = round((A[0][1] + A[1][1]) / 2);
+	double x1 = (A[0][0] + A[1][0]) / 2;
+	double y1 = (A[0][1] + A[1][1]) / 2;
 	double U = flag ? SCALE : scale;
-	float B[3][3] = { {U,0,0},{0,U,0},{x1-U*x1, y1-U*y1, 1} };
+	double B[3][3] = { {U,0,0},{0,U,0},{x1 - U * x1, y1 - U * y1, 1} };
+	double tmp[3] = { 0,0, };
+	for (int i = 0; i < 2; i++)
+	{
+		tmp[0] = (A[i][0] * B[0][0] + A[i][1] * B[1][0] + A[i][2] * B[2][0]);
+		tmp[1] = (A[i][0] * B[0][1] + A[i][1] * B[1][1] + A[i][2] * B[2][1]);
+		tmp[2] = (A[i][0] * B[0][2] + A[i][1] * B[1][2] + A[i][2] * B[2][2]);
 
-	A[0][0] = round(A[0][0] * B[0][0] + A[0][1] * B[1][0] + A[0][2] * B[2][0]);
-	A[0][1] = round(A[0][0] * B[0][1] + A[0][1] * B[1][1] + A[0][2] * B[2][1]);
-	A[0][2] = round(A[0][0] * B[0][2] + A[0][1] * B[1][2] + A[0][2] * B[2][2]);
-
-	A[1][0] = round(A[1][0] * B[0][0] + A[1][1] * B[1][0] + A[1][2] * B[2][0]);
-	A[1][1] = round(A[1][0] * B[0][1] + A[1][1] * B[1][1] + A[1][2] * B[2][1]);
-	A[1][2] = round(A[1][0] * B[0][2] + A[1][1] * B[1][2] + A[1][2] * B[2][2]);
-	
+		A[i][0] = tmp[0];
+		A[i][1] = tmp[1];
+		A[i][2] = tmp[2];
+	}
 }
-void rot(int A[][3], int flag)
+void rot(double A[][3], int flag)
 {
-
 	double x1 = (A[0][0] + A[1][0]) / 2;
 	double y1 = (A[0][1] + A[1][1]) / 2;
 	double U = ((flag ? R : L) * PI / 180);
-	double B[3][3] = { {cos(U),sin(U),0},{-sin(U),cos(U),0},{(x1*(1-cos(U)) +y1*sin(U)),(y1*(1-cos(U)) - x1*sin(U)), 1} };
+	double B[3][3] = { {cos(U),sin(U),0},{-sin(U),cos(U),0},{(x1*(1 - cos(U)) + y1 * sin(U)),(y1*(1 - cos(U)) - x1 * sin(U)), 1} };
+	double tmp[3] = { 0,0, };
+	for (int i = 0; i < 2; i++)
+	{
+		tmp[0] = (A[i][0] * B[0][0] + A[i][1] * B[1][0] + A[i][2] * B[2][0]);
+		tmp[1] = (A[i][0] * B[0][1] + A[i][1] * B[1][1] + A[i][2] * B[2][1]);
+		tmp[2] = (A[i][0] * B[0][2] + A[i][1] * B[1][2] + A[i][2] * B[2][2]);
 
-	A[0][0] = round (A [0][0] * B[0][0] + A[0][1] * B[1][0] + A[0][2] * B[2][0]);
-	A[0][1] = round (A [0][0] * B[0][1] + A[0][1] * B[1][1] + A[0][2] * B[2][1]);
-	A[0][2] = round (A [0][0] * B[0][2] + A[0][1] * B[1][2] + A[0][2] * B[2][2]);
-
-	A[1][0] = round (A [1][0] * B[0][0] + A[1][1] * B[1][0] + A[1][2] * B[2][0]);
-	A[1][1] = round (A [1][0] * B[0][1] + A[1][1] * B[1][1] + A[1][2] * B[2][1]);
-	A[1][2] = round (A [1][0] * B[0][2] + A[1][1] * B[1][2] + A[1][2] * B[2][2]);
-
-}; 
+		A[i][0] = tmp[0];
+		A[i][1] = tmp[1];
+		A[i][2] = tmp[2];
+	}
+};
 
 
 
@@ -119,61 +165,66 @@ int main()
 {
 	system("chcp 1251");
 
-	int A[2][3] = { {0, 0, 1 } , {0, 0, 1} };
-	char choice ='0';
-
-	printf("Введите X0:");		
-	scanf("%d", &A[0][0] );
-
-	printf("Введите Y0:");
-	scanf("%d", &A[0][1] ) ;
-
-	printf("Введите X1:");
-	scanf("%d", &A[1][0] );
-
-	printf("Введите Y1:");
-
-	scanf("%d", &A[1][1] );
-	A[0][0] += X0;
-	A[1][0] += X0;
-	system("cls");
-	do 
+	double A[2][3] = { {0, 0, 1 } , {0, 0, 1} };
+	char choice = '0';
+	for (int i = 0; i < 2; i++)
 	{
-		DrawLine(A);
-		choice = getchar();
-		system("cls");
+		printf("Введите X[%d]:", i);
+		scanf("%lf", &A[i][0]);
+
+		printf("Введите Y[%d]:", i);
+		scanf("%lf", &A[i][1]);
+
+		A[i][0] += X0;
+
+	}
+
+	system("cls");
+	do
+	{
+		DrawLine(A,1);
+		choice = _getch();
+		
 
 		switch (choice)
 		{
 		case '2'://Сдвиг  вниз
+			DrawLine(A, 0);
 			move_y(A, 0);
 			break;
 
 		case '8'://Сдвиг вверх
+			DrawLine(A, 0);
 			move_y(A, 1);
 			break;
 
 		case '6'://Сдвиг вправо 
+			DrawLine(A, 0);
 			move_x(A, 1);
 			break;
 
 		case '4'://Сдвиг влево
+			DrawLine(A, 0);
 			move_x(A, 0);
 			break;
 
 		case '1'://Уменьшить
+			DrawLine(A, 0);
 			Scale(A, 0);
 			break;
 
 		case '3'://Увеличить
+			DrawLine(A, 0);
 			Scale(A, 1);
 			break;
 
 		case '7'://Вращать влево
+			DrawLine(A, 0);
 			rot(A, 1);
 			break;
 
 		case '9'://Вращать вправо
+			DrawLine(A, 0);
 			rot(A, 0);
 			break;
 
@@ -181,7 +232,7 @@ int main()
 		}
 
 	} while (choice != '0');
-	
+
 
 	return 0;
 }
